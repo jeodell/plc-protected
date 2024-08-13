@@ -1,0 +1,287 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --plcOrange: #e8881d;
+  --plcBlue: #69b1be;
+  --plcLightGreen: #88c82f;
+  --plcDarkGreen: #345b30;
+}
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+body {
+  color: #404040;
+  font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  margin: 0;
+  font-weight: 400;
+  line-height: 2rem;
+  font-family: 'Montserrat', sans-serif;
+  text-transform: uppercase;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  color: #101010;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  width: auto;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  min-height: 50px;
+  padding: 12px;
+  background-color: #af3c33;
+  color: #fff;
+  display: flex;
+  align-items: center;
+}
+
+.listings {
+  height: 100%;
+  overflow: auto;
+}
+
+.listings .item {
+  display: block;
+  border-bottom: 1px solid #eee;
+  padding: 18px 12px 18px 12px;
+  text-decoration: none;
+}
+
+.listings .item:last-child {
+  border-bottom: none;
+}
+
+.listings .item .title {
+  color: #af3c33;
+  display: block;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.listings .item .title:hover {
+  color: #af3b33bf;
+  display: block;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.listings .item .title small {
+  font-weight: 400;
+}
+
+.listings .item.active .title {
+  color: #af3b33bf;
+}
+
+.listings .item.active {
+  background-color: #f8f8f8;
+  border-left: 5px solid #af3c33;
+}
+
+.listingImage {
+  width: 100%;
+  height: auto;
+  margin: 5px 5px 0 0;
+}
+
+.listingIcons {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.listingIcon {
+  margin-right: 5px;
+}
+
+.listingDesc {
+  color: #555;
+}
+
+.popupImage {
+  width: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+.shown {
+  display: block;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  border-left: 0;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-track {
+  background: none;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 0;
+}
+
+.marker {
+  display: block;
+  /* background-image: url('../images/marker.png'); */
+  background-size: cover;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  height: 40px;
+  width: 40px;
+  padding: 0;
+}
+
+.clearfix {
+  display: block;
+}
+
+.clearfix:after {
+  content: '.';
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+
+/* Marker tweaks */
+
+.mapboxgl-popup {
+  padding-bottom: 50px;
+}
+
+.mapboxgl-popup-close-button {
+  display: none;
+}
+
+.mapboxgl-popup-content {
+  font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+  padding: 0;
+  width: 180px;
+}
+
+.mapboxgl-popup-content-wrapper {
+  padding: 1%;
+}
+
+.mapboxgl-popup-content h3 {
+  background: #0c5059;
+  color: #fff;
+  margin: 0;
+  display: block;
+  padding: 10px;
+  border-radius: 3px 3px 0 0;
+  font-weight: 700;
+}
+
+.mapboxgl-popup-content h4 {
+  margin: 0px 10px;
+  display: block;
+  font-weight: 400;
+}
+
+.mapboxgl-popup-content div {
+  padding: 10px;
+}
+
+.mapboxgl-container .leaflet-marker-icon {
+  cursor: pointer;
+}
+
+.mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+  margin-top: 15px;
+}
+
+.mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+  border-bottom-color: #af3c33;
+}
+
+/* Range slider */
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: all;
+  width: 12px;
+  height: 12px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #148a99;
+  cursor: pointer;
+}
+
+input[type='range']::-moz-range-thumb {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  pointer-events: all;
+  width: 12px;
+  height: 12px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #148a99;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-thumb:hover {
+  background: #f7f7f7;
+}
+
+input[type='range']::-webkit-slider-thumb:active {
+  box-shadow: inset 0 0 3px #148a99;
+  -webkit-box-shadow: inset 0 0 3px #148a99;
+}
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  width: 100%;
+  position: absolute;
+  background-color: #c6c6c6;
+  pointer-events: none;
+}
+
+#fromSlider {
+  height: 0;
+  z-index: 1;
+}
+/* End range slider */
