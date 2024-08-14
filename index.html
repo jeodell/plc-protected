@@ -12,7 +12,14 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,100..900;1,100..900&family=Cormorant:ital,wght@0,300..700;1,300..700&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,100..900;1,100..900&family=Cormorant:ital,wght@0,300..700;1,300..700&display=swap"
+      rel="stylesheet"
+    />
     <!-- GLightbox -->
     <link rel="stylesheet" href="./styles/glightbox.min.css" />
     <!-- MapBox GL JS -->
@@ -56,8 +63,10 @@
 
   <body>
     <section>
-      <div id="header" class="w-full h-16 bg-[#af3c33] text-white flex items-center justify-between p-2">
-        <h1 class="text-sm md:text-base lg:text-lg xl:text-xl">Piedmont Land Conservancy | Protected Lands</h1>
+      <div id="header" class="w-full h-16 bg-[var(--plcDarkGreen)] text-white flex items-center justify-between p-2">
+        <h1 class="text-sm md:text-base lg:text-lg xl:text-xl">
+          <span class="plc-title">Piedmont Land Conservancy</span> | Protected Lands
+        </h1>
         <div class="flex items-center">
           <button id="toggle-filter-button" onclick="toggleSlideover()" class="mr-2 text-white">
             <i class="fas fa-filter"></i>
@@ -119,18 +128,18 @@
     <section id="legend" class="z-25">
       <div class="absolute bottom-0 right-0 bg-white flex flex-col gap-y-2 m-4 px-3 py-3 rounded">
         <div class="flex justify-start items-center gap-x-2">
-          <div class="w-4 h-4 rounded-full bg-[#af3c33]"></div>
-          <span class="text-xs font-semibold">Dam</span>
+          <div class="w-4 h-4 rounded-full bg-[var(--plcDarkGreen)]"></div>
+          <span class="text-sm font-semibold">Dam</span>
         </div>
         <div class="flex justify-start items-center gap-x-2">
-          <div class="w-4 h-4 rounded-full bg-[#148a99]"></div>
-          <span class="text-xs font-semibold">Outfitter</span>
+          <div class="w-4 h-4 rounded-full bg-[var(--plcBlue)]"></div>
+          <span class="text-sm font-semibold">Outfitter</span>
         </div>
       </div>
     </section>
     <button
       id="reset-map-button"
-      class="hidden absolute left-1/4 ml-[49px] top-[120px] h-[29px] text-white px-2 bg-[#af3c33] rounded-[4px]"
+      class="hidden absolute left-1/4 ml-[49px] top-[120px] h-[29px] text-white px-2 bg-[var(--plcDarkGreen)] rounded-[4px] text-sm"
       aria-label="Reset map to original center and zoom level"
     >
       Reset Map
