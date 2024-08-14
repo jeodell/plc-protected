@@ -17,7 +17,7 @@ const googleSheetsUrl =
   'https://docs.google.com/spreadsheets/d/1yl5b3J34iC5UncrGnsJxKMCSdpZKXubcwh03mtxRM7E/gviz/tq?tqx=out:csv&sheet=Sheet1'
 const defaultCenter = [-80.1, 36]
 const defaultZoom = 8
-let allBluewaysList = null
+let allProtectedLandsList = null
 
 function toggleSlideover() {
   document.getElementById('slideover').classList.toggle('hidden')
@@ -45,7 +45,7 @@ function controlToInput(toSlider, fromInput, toInput, controlSlider) {
   }
 }
 
-function controlFromSlider(fromSlider, toSlider, fromInput, fromSpan, filterBlueways) {
+function controlFromSlider(fromSlider, toSlider, fromInput, fromSpan, filterProtectedLands) {
   const [from, to] = getParsed(fromSlider, toSlider)
   fillSlider(fromSlider, toSlider, window.plcLightGreen, window.plcDarkGreeen, toSlider)
   if (from >= to) {
@@ -56,10 +56,10 @@ function controlFromSlider(fromSlider, toSlider, fromInput, fromSpan, filterBlue
     fromInput.value = from
     fromSpan.innerHTML = `${from}${from == 10 ? '+' : ''} miles`
   }
-  filterBlueways()
+  filterProtectedLands()
 }
 
-function controlToSlider(fromSlider, toSlider, toInput, toSpan, filterBlueways) {
+function controlToSlider(fromSlider, toSlider, toInput, toSpan, filterProtectedLands) {
   const [from, to] = getParsed(fromSlider, toSlider)
   fillSlider(fromSlider, toSlider, window.plcLightGreen, window.plcDarkGreeen, toSlider)
   if (to <= from) {
@@ -71,7 +71,7 @@ function controlToSlider(fromSlider, toSlider, toInput, toSpan, filterBlueways) 
     toSlider.value = to
     toSpan.innerHTML = `${to}${to == 10 ? '+' : ''} miles`
   }
-  filterBlueways()
+  filterProtectedLands()
 }
 
 function getParsed(currentFrom, currentTo) {
@@ -119,10 +119,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   fillSlider(fromSlider, toSlider, window.plcLightGreen, window.plcDarkGreeen, toSlider)
 
-  const filterByWaterbody = document.querySelectorAll('#filter-by-waterbody input')
+  const filterByProtectedLand = document.querySelectorAll('#filter-by-protected-land input')
   const filterByDifficulty = document.querySelectorAll('#filter-by-difficulty input')
 
-  // Fetch blueway data from google sheets
+  // Fetch protected lands data from google sheets
   fetch(googleSheetsUrl)
     .then((response) => response.text())
     .then((csvData) => {
@@ -140,35 +140,37 @@ document.addEventListener('DOMContentLoaded', function () {
         lonfield: 'Long',
         delimiter: ',',
       },
-      function (err, blueways) {
+      function (err, protectedLands) {
         if (err) {
           console.error(err)
         }
 
-        allBluewaysList = { ...blueways }
+        allProtectedLandsList = { ...protectedLands }
 
-        // Assign a unique id to each blueway to be associated with sidebar listing
-        blueways.features.forEach(function (blueway, i) {
-          blueway.properties.id = i
+        // Assign a unique id to each protected land to be associated with sidebar listing
+        protectedLands.features.forEach(function (protectedLand, i) {
+          protectedLand.properties.id = i
         })
 
         map.on('load', function (e) {
-          // Add event listeners for filter by waterbody checkboxes
-          filterByWaterbody.forEach((checkbox) => {
+          // Add event listeners for filter by protected land checkboxes
+          filterByProtectedLand.forEach((checkbox) => {
             checkbox.addEventListener('change', () => {
               if (checkbox.value === 'all') {
-                filterByWaterbody.forEach((checkbox) => {
+                filterByProtectedLand.forEach((checkbox) => {
                   checkbox.checked = false
                 })
                 checkbox.checked = true
               } else {
-                document.querySelector('#filter-by-waterbody input[value="all"]').checked = false
-                const filterByWaterbodyChecked = document.querySelectorAll('#filter-by-waterbody input:checked')
-                if (filterByWaterbodyChecked.length === 0) {
-                  document.querySelector('#filter-by-waterbody input[value="all"]').checked = true
+                document.querySelector('#filter-by-protected-land input[value="all"]').checked = false
+                const filterByProtectedLandChecked = document.querySelectorAll(
+                  '#filter-by-protected-land input:checked',
+                )
+                if (filterByProtectedLandChecked.length === 0) {
+                  document.querySelector('#filter-by-protected-land input[value="all"]').checked = true
                 }
               }
-              filterBlueways()
+              filterProtectedLands()
             })
           })
 
@@ -187,13 +189,13 @@ document.addEventListener('DOMContentLoaded', function () {
                   document.querySelector('#filter-by-difficulty input[value="all"]').checked = true
                 }
               }
-              filterBlueways()
+              filterProtectedLands()
             })
           })
 
           // Add event listeners for filter by distance slider and input
-          fromSlider.oninput = () => controlFromSlider(fromSlider, toSlider, fromInput, fromSpan, filterBlueways)
-          toSlider.oninput = () => controlToSlider(fromSlider, toSlider, toInput, toSpan, filterBlueways)
+          fromSlider.oninput = () => controlFromSlider(fromSlider, toSlider, fromInput, fromSpan, filterProtectedLands)
+          toSlider.oninput = () => controlToSlider(fromSlider, toSlider, toInput, toSpan, filterProtectedLands)
           fromInput.oninput = () => controlFromInput(fromSlider, fromInput, toInput, toSlider)
           toInput.oninput = () => controlToInput(toSlider, fromInput, toInput, toSlider)
 
@@ -203,12 +205,12 @@ document.addEventListener('DOMContentLoaded', function () {
             map.addImage('plc-marker', image)
           })
 
-          addBlueways()
+          addProtectedLands()
 
-          // var bbox = turf.bbox(blueways)
+          // var bbox = turf.bbox(protectedLands)
           // map.fitBounds(bbox, { padding: 50 })
 
-          // Show blueway popup when hovering marker
+          // Show protected land popup when hovering marker
           map.on('mouseenter', 'access-points', (e) => {
             map.getCanvas().style.cursor = 'pointer'
             createPopUp(e.features[0])
@@ -249,21 +251,21 @@ document.addEventListener('DOMContentLoaded', function () {
               geometry: ev.result.geometry,
             }
             const options = 'miles'
-            blueways.features.forEach(function (blueway) {
+            protectedLands.features.forEach(function (protectedLand) {
               let coordinates
-              if (blueway.properties.Long !== undefined && blueway.properties.Lat !== undefined) {
-                coordinates = turf.point([blueway.properties.Long, blueway.properties.Lat])
+              if (protectedLand.properties.Long !== undefined && protectedLand.properties.Lat !== undefined) {
+                coordinates = turf.point([protectedLand.properties.Long, protectedLand.properties.Lat])
               } else {
-                coordinates = turf.point(blueway.geometry.coordinates)
+                coordinates = turf.point(protectedLand.geometry.coordinates)
               }
-              Object.defineProperty(blueway.properties, 'distance', {
+              Object.defineProperty(protectedLand.properties, 'distance', {
                 value: turf.distance(searchResult, coordinates, options),
                 writable: true,
                 enumerable: true,
                 configurable: true,
               })
             })
-            sortBluewaysByDistance()
+            sortProtectedLandsByDistance()
 
             const listings = document.getElementById('listings')
             while (listings?.firstChild) {
@@ -274,8 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Reset if geocoder is exited
           geocoder.on('clear', async function (ev) {
-            sortBluewaysByNumber()
-            sortBluewaysAlphabetically()
+            sortProtectedLandsAlphabetically()
             resetLocationList()
           })
 
@@ -296,21 +297,21 @@ document.addEventListener('DOMContentLoaded', function () {
               attributes: {},
             }
             const options = 'miles'
-            blueways.features.forEach(function (blueway) {
+            protectedLands.features.forEach(function (protectedLand) {
               let coordinates
-              if (blueway.properties.Long !== undefined && blueway.properties.Lat !== undefined) {
-                coordinates = turf.point([blueway.properties.Long, blueway.properties.Lat])
+              if (protectedLand.properties.Long !== undefined && protectedLand.properties.Lat !== undefined) {
+                coordinates = turf.point([protectedLand.properties.Long, protectedLand.properties.Lat])
               } else {
-                coordinates = turf.point(blueway.geometry.coordinates)
+                coordinates = turf.point(protectedLand.geometry.coordinates)
               }
-              Object.defineProperty(blueway.properties, 'distance', {
+              Object.defineProperty(protectedLand.properties, 'distance', {
                 value: turf.distance(searchResult, coordinates, options),
                 writable: true,
                 enumerable: true,
                 configurable: true,
               })
             })
-            blueways.features.sort(function (a, b) {
+            protectedLands.features.sort(function (a, b) {
               if (a.properties.distance > b.properties.distance) {
                 return 1
               }
@@ -326,10 +327,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             buildLocationList()
-            createPopUp(blueways.features[0])
+            createPopUp(protectedLands.features[0])
 
-            // Highlight the listing for the closest blueway
-            const activeListing = document.getElementById('listing-' + blueways.features[0].properties.id)
+            // Highlight the listing for the closest protected land
+            const activeListing = document.getElementById('listing-' + protectedLands.features[0].properties.id)
             activeListing?.classList.add('active')
           })
 
@@ -345,24 +346,23 @@ document.addEventListener('DOMContentLoaded', function () {
           })
           map.addControl(scale, 'bottom-left')
 
-          sortBluewaysByNumber()
-          sortBluewaysAlphabetically()
+          sortProtectedLandsAlphabetically()
 
           buildLocationList()
           showResetMapButton()
           showShowFilterButton()
 
-          function addBlueways() {
-            // Add source for blueways
-            map.addSource('blueways', {
+          function addProtectedLands() {
+            // Add source for protectedLands
+            map.addSource('protectedLands', {
               type: 'geojson',
-              data: blueways,
+              data: protectedLands,
             })
 
             map.addLayer({
               id: 'access-points',
               type: 'symbol',
-              source: 'blueways',
+              source: 'protectedLands',
               layout: {
                 'icon-image': 'plc-marker',
                 'icon-size': 0.8,
@@ -385,19 +385,19 @@ document.addEventListener('DOMContentLoaded', function () {
             showFilterButton?.classList.remove('hidden')
           }
 
-          // Filter blueways
-          function filterBlueways() {
-            blueways = { ...allBluewaysList }
+          // Filter protectedLands
+          function filterProtectedLands() {
+            protectedLands = { ...allProtectedLandsList }
 
-            const checkedWaterbodies = []
-            for (const outerInput of filterByWaterbody) {
-              if (outerInput.value === 'all' && outerInput.checked && checkedWaterbodies.length === 0) {
-                for (const innerInput of filterByWaterbody) {
-                  checkedWaterbodies.push(innerInput.value.toLowerCase())
+            const checkedProtectedLands = []
+            for (const outerInput of filterByProtectedLand) {
+              if (outerInput.value === 'all' && outerInput.checked && checkedProtectedLands.length === 0) {
+                for (const innerInput of filterByProtectedLand) {
+                  checkedProtectedLands.push(innerInput.value.toLowerCase())
                 }
                 break
               } else if (outerInput.checked) {
-                checkedWaterbodies.push(outerInput.value.toLowerCase())
+                checkedProtectedLands.push(outerInput.value.toLowerCase())
               }
             }
 
@@ -413,32 +413,30 @@ document.addEventListener('DOMContentLoaded', function () {
               }
             }
 
-            blueways.features = blueways.features.filter((blueway) => {
-              // Matching blueway
-              let bluewayWaterbody = blueway.properties.Waterbody
-              let hasMatchingWaterbody = false
+            protectedLands.features = protectedLands.features.filter((protectedLand) => {
+              // Matching protected land
+              const protectedLandName = protectedLand.properties.ProtectedLand
+              let hasMatchingProtectedLand = false
 
-              if (bluewayWaterbody === undefined) {
+              if (!protectedLandName || protectedLandName === undefined) {
                 return false
               }
 
-              bluewayWaterbody = bluewayWaterbody.trim().toLowerCase()
-
-              if (checkedWaterbodies.includes(bluewayWaterbody)) {
-                hasMatchingWaterbody = true
+              if (checkedProtectedLands.includes(protectedLandName)) {
+                hasMatchingProtectedLand = true
               }
 
               // Matching difficulty
-              const bluewayDifficulty = blueway.properties.Difficulty
+              const protectedLandDifficulty = protectedLand.properties.Difficulty
               let hasMatchingDifficulty = false
 
-              if (bluewayDifficulty === undefined) {
+              if (protectedLandDifficulty === undefined) {
                 return false
               } else {
                 if (checkedDifficulty.includes('all')) {
                   hasMatchingDifficulty = true
                 } else {
-                  if (checkedDifficulty.includes(bluewayDifficulty.trim().toLowerCase())) {
+                  if (checkedDifficulty.includes(protectedLandDifficulty.trim().toLowerCase())) {
                     hasMatchingDifficulty = true
                   }
                 }
@@ -447,43 +445,31 @@ document.addEventListener('DOMContentLoaded', function () {
               // Within distance
               const [from, to] = getParsed(fromInput, toInput)
               let hasMatchingDistance = false
-              const previousPutInIndex = blueways.features.findIndex((bluewayIterator) => {
-                return (
-                  bluewayIterator.properties.Waterbody == blueway.properties.Waterbody &&
-                  bluewayIterator.properties.RiverOrderNumber == blueway.properties.RiverOrderNumber - 1
-                )
-              })
-              const previousPutIn = previousPutInIndex != -1 ? blueways.features[previousPutInIndex] : null
+
               if (
-                (blueway.properties['Miles to Next'] != '' &&
-                  blueway.properties['Miles to Next'] != '-' &&
-                  ((blueway.properties['Miles to Next'] >= from && to === 10) ||
-                    (blueway.properties['Miles to Next'] >= from && blueway.properties['Miles to Next'] <= to))) ||
-                (previousPutIn &&
-                  previousPutIn.properties['Miles to Next'] != '' &&
-                  previousPutIn.properties['Miles to Next'] != '-' &&
-                  previousPutIn.properties['Miles to Next'] >= from &&
-                  previousPutIn.properties['Miles to Next'] <= to)
+                protectedLand.properties.Mileage != '' &&
+                ((protectedLand.properties.Mileage >= from && to === 10) ||
+                  (protectedLand.properties.Mileage >= from && protectedLand.properties.Mileage <= to))
               ) {
                 hasMatchingDistance = true
               }
 
-              return hasMatchingWaterbody && hasMatchingDifficulty && hasMatchingDistance
+              return hasMatchingProtectedLand && hasMatchingDifficulty && hasMatchingDistance
             })
 
-            sortBluewaysByNumber()
-            sortBluewaysAlphabetically()
+            sortProtectedLandsAlphabetically()
             resetLocationList()
             filterMarkers()
           }
 
-          // Add matching blueways to search results
+          // Add matching protectedLands to search results
           function forwardGeocoder(query) {
             const matchingFeatures = []
-            for (let i = 0; i < blueways.features.length; i++) {
-              const feature = blueways.features[i]
-              if (feature.properties.Name.toLowerCase().search(query.toLowerCase()) !== -1) {
-                feature['place_name'] = '🛶  ' + feature.properties.Name
+            for (let i = 0; i < protectedLands.features.length; i++) {
+              const feature = protectedLands.features[i]
+              if (feature.properties.ProtectedLand.toLowerCase().search(query.toLowerCase()) !== -1) {
+                // TODO change icon
+                feature['place_name'] = '🛶  ' + feature.properties.ProtectedLand
                 if (feature.properties.Long !== undefined && feature.properties.Lat !== undefined) {
                   feature['center'] = [feature.properties.Long, feature.properties.Lat]
                 } else {
@@ -505,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
           // On marker click, fly to the point, add popup, and show listing in sidebar
           function handleMarkerClick(e, marker) {
             e.preventDefault()
-            flyToBlueway(marker)
+            flyToProtectedLand(marker)
             createPopUp(marker)
             const activeItem = document.getElementsByClassName('active')
             if (activeItem[0]) {
@@ -520,18 +506,18 @@ document.addEventListener('DOMContentLoaded', function () {
             })
           }
 
-          // Add blueways after filtering
+          // Add protectedLands after filtering
           function filterMarkers() {
             map.removeLayer('access-points')
-            map.removeSource('blueways')
-            addBlueways()
+            map.removeSource('protectedLands')
+            addProtectedLands()
           }
 
-          // Add a listing for each blueway to the sidebar
+          // Add a listing for each protected land to the sidebar
           function buildLocationList() {
             const listings = document.getElementById('listings')
 
-            if (blueways.features.length === 0) {
+            if (protectedLands.features.length === 0) {
               const noResults = listings?.appendChild(document.createElement('div'))
               if (noResults) {
                 noResults.className = 'item'
@@ -539,8 +525,8 @@ document.addEventListener('DOMContentLoaded', function () {
               }
             }
 
-            blueways.features.forEach(function (blueway, i) {
-              const prop = blueway.properties
+            protectedLands.features.forEach(function (protectedLand, i) {
+              const prop = protectedLand.properties
 
               // Add a new listing section to the sidebar
               const listing = listings?.appendChild(document.createElement('div'))
@@ -553,62 +539,9 @@ document.addEventListener('DOMContentLoaded', function () {
               const link = listing?.appendChild(document.createElement('a'))
               if (link) {
                 link.href = '#'
-                // TODO get dis workin
                 link.className = 'title'
                 link.id = 'link-' + prop.id
-                const riverOrderNumber = prop.RiverOrderNumber
-                link.innerHTML = `${riverOrderNumber ? riverOrderNumber + ') ' : ''}${prop.Name}`
-              }
-
-              // Add waterbody to the listing
-              const waterbody = listing?.appendChild(document.createElement('div'))
-              if (waterbody) {
-                waterbody.classList.add('mt-1')
-                const protectLandName = prop.Name.toLowerCase()
-                waterbody.innerHTML += `<strong>${protectLandName}</strong>`
-              }
-
-              // Add icons to the listing
-              const icons = listing?.appendChild(document.createElement('div'))
-              if (icons) {
-                icons.className = 'listingIcons'
-              }
-
-              // Parking
-              if (prop.Parking && prop.Parking.trim().toLowerCase() == 'yes') {
-                const iconElement = icons?.appendChild(document.createElement('i'))
-                if (iconElement) {
-                  iconElement.className = 'fas fa-parking listingIcon'
-                }
-              }
-
-              // Bathrooms
-              if (prop.Bathrooms && prop.Bathrooms.trim().toLowerCase() !== 'no' && prop.Bathrooms.trim() !== '-') {
-                const iconElement = icons?.appendChild(document.createElement('i'))
-                if (iconElement) {
-                  iconElement.className = 'fas fa-restroom listingIcon'
-                }
-              }
-
-              // Kayak Access
-              if (prop.KayakAcces && prop.KayakAcces.trim().toLowerCase() == 'yes') {
-                const iconElement = icons?.appendChild(document.createElement('i'))
-                if (iconElement) {
-                  iconElement.outerHTML =
-                    '<span class="material-symbols-outlined mr-1" style="font-size: 15px">kayaking</span>'
-                }
-              }
-
-              // Boat Access
-              if (
-                prop['Boat Launch Surface'] &&
-                prop['Boat Launch Surface'].trim().toLowerCase() !== 'no' &&
-                prop['Boat Launch Surface'].trim() !== '-'
-              ) {
-                const iconElement = icons?.appendChild(document.createElement('i'))
-                if (iconElement) {
-                  iconElement.className = 'fas fa-ship listingIcon'
-                }
+                link.innerText = prop.ProtectedLand
               }
 
               // Add distance from location or searched location to the listing
@@ -622,46 +555,42 @@ document.addEventListener('DOMContentLoaded', function () {
               const details = listing?.appendChild(document.createElement('div'))
               if (details) {
                 // Add address to the listing
-                const address = listing?.appendChild(document.createElement('div'))
-                if (address && prop.Address && prop.Address.trim() !== '' && prop.Address.trim() !== '-') {
+                if (prop.Address && prop.Address.trim() !== '') {
                   details.innerHTML += '<p><strong>Location:</strong> ' + prop.Address + '</p>'
                 }
-                const description = listing?.appendChild(document.createElement('div'))
-                if (
-                  description &&
-                  prop.Description &&
-                  prop.Description.trim() !== '' &&
-                  prop.Description.trim() !== '<Null>'
-                ) {
+
+                // Add trailhead to the listing
+                if (prop.Trailhead && prop.Trailhead.trim() !== '') {
+                  details.innerHTML += '<p><strong>Trailhead:</strong> ' + prop.Trailhead + '</p>'
+                }
+
+                // Add state park to the listing
+                if (prop.Park && prop.Park.trim() !== '') {
+                  details.innerHTML += '<p><strong>Park:</strong> ' + prop.Park + '</p>'
+                }
+
+                // Add access to the listing
+                if (prop.Access && prop.Access.trim() !== '') {
+                  details.innerHTML += '<p><strong>Access:</strong> ' + prop.Access + '</p>'
+                }
+
+                // Add description to the listing
+                if (prop.Description && prop.Description.trim() !== '') {
                   details.innerHTML += '<p><strong>Description:</strong> ' + prop.Description + '</p>'
                 }
-                const miles = listing?.appendChild(document.createElement('div'))
-                if (miles && prop['Miles to Next'] && prop['Miles to Next'] !== 0) {
-                  details.innerHTML +=
-                    '<p><strong>Miles To Next Access Point:</strong> ' + prop['Miles to Next'] + '</p>'
+
+                // Add mileage to the listing
+                if (prop.Mileage && prop.Mileage !== 0) {
+                  details.innerHTML += '<p><strong>Miles:</strong> ' + prop.Mileage + '</p>'
                 }
-                const putIn = listing?.appendChild(document.createElement('div'))
-                if (putIn && prop['Put in (River side)'] && prop['Put in (River side)'].trim() !== '') {
-                  details.innerHTML += '<p><strong>Put In:</strong> ' + prop['Put in (River side)'] + '</p>'
-                }
-                const takeOut = listing?.appendChild(document.createElement('div'))
-                if (takeOut && prop.TakeOut && prop.TakeOut.trim() !== '') {
-                  details.innerHTML += '<p><strong>Take Out:</strong> ' + prop.TakeOut + '</p>'
-                }
-                const paddle = listing?.appendChild(document.createElement('div'))
-                if (paddle && prop.Paddle && prop.Paddle.trim() !== '') {
-                  details.innerHTML += '<p><strong>Paddle:</strong> ' + prop.Paddle + '</p>'
-                }
-                const difficulty = listing?.appendChild(document.createElement('div'))
-                if (difficulty && prop.Difficulty && prop.Difficulty.trim() !== '') {
+
+                // Add difficulty to the listing
+                if (prop.Difficulty && prop.Difficulty.trim() !== '') {
                   details.innerHTML += '<p><strong>Difficulty:</strong> ' + prop.Difficulty + '</p>'
                 }
-                const tubing = listing?.appendChild(document.createElement('div'))
-                if (tubing && prop.Tubing && prop.Tubing.trim() !== '') {
-                  details.innerHTML += '<p><strong>Tubing:</strong> ' + prop.Tubing + '</p>'
-                }
-                const website = listing?.appendChild(document.createElement('div'))
-                if (website && prop.Website && prop.Website.trim() !== '' && prop.Website.trim() !== '-') {
+
+                // Add website to the listing
+                if (prop.Website && prop.Website.trim() !== '') {
                   details.innerHTML +=
                     '<p><strong>Website:</strong> <a class="underline" href="' +
                     prop.Website +
@@ -669,10 +598,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     prop.Website +
                     '</a></p>'
                 }
+
                 details.className = 'hidden listingDesc'
               }
 
-              // Fly to blueway, create new popup, and highlight sidebar listing
+              // Fly to protected land, create new popup, and highlight sidebar listing
               link?.addEventListener('click', function (e) {
                 e.preventDefault()
                 const activeItem = document.getElementsByClassName('active')
@@ -680,17 +610,17 @@ document.addEventListener('DOMContentLoaded', function () {
                   activeItem[0].classList.remove('active')
                 }
                 this.parentNode?.classList.add('active')
-                for (let i = 0; i < blueways.features.length; i++) {
-                  if (this.id === 'link-' + blueways.features[i].properties.id) {
-                    const clickedListing = blueways.features[i]
-                    flyToBlueway(clickedListing)
+                for (let i = 0; i < protectedLands.features.length; i++) {
+                  if (this.id === 'link-' + protectedLands.features[i].properties.id) {
+                    const clickedListing = protectedLands.features[i]
+                    flyToProtectedLand(clickedListing)
                     createPopUp(clickedListing)
                     showListing(clickedListing)
                   }
                 }
               })
 
-              // Fly to blueway, create new popup, and highlight sidebar listing
+              // Fly to protected land, create new popup, and highlight sidebar listing
               link?.addEventListener('touchstart', function (e) {
                 e.preventDefault()
                 const activeItem = document.getElementsByClassName('active')
@@ -698,10 +628,10 @@ document.addEventListener('DOMContentLoaded', function () {
                   activeItem[0].classList.remove('active')
                 }
                 this.parentNode?.classList.add('active')
-                for (let i = 0; i < blueways.features.length; i++) {
-                  if (this.id === 'link-' + blueways.features[i].properties.id) {
-                    const clickedListing = blueways.features[i]
-                    flyToBlueway(clickedListing)
+                for (let i = 0; i < protectedLands.features.length; i++) {
+                  if (this.id === 'link-' + protectedLands.features[i].properties.id) {
+                    const clickedListing = protectedLands.features[i]
+                    flyToProtectedLand(clickedListing)
                     createPopUp(clickedListing)
                     showListing(clickedListing)
                   }
@@ -717,8 +647,8 @@ document.addEventListener('DOMContentLoaded', function () {
               listings.removeChild(listings.firstChild)
             }
 
-            blueways.features.forEach(function (blueway, i) {
-              const prop = blueway.properties
+            protectedLands.features.forEach(function (protectedLand, i) {
+              const prop = protectedLand.properties
               if (prop.distance) {
                 prop.distance = undefined
               }
@@ -728,12 +658,12 @@ document.addEventListener('DOMContentLoaded', function () {
           }
 
           // Use Mapbox GL JS's `flyTo` to move the camera smoothly a given center point
-          function flyToBlueway(blueway) {
-            if (blueway.properties.Long !== undefined && blueway.properties.Lat !== undefined) {
+          function flyToProtectedLand(protectedLand) {
+            if (protectedLand.properties.Long !== undefined && protectedLand.properties.Lat !== undefined) {
               map.flyTo({
                 center: {
-                  lng: blueway.properties.Long,
-                  lat: blueway.properties.Lat,
+                  lng: protectedLand.properties.Long,
+                  lat: protectedLand.properties.Lat,
                 },
                 zoom: 16,
                 bearing: 0,
@@ -741,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function () {
               })
             } else {
               map.flyTo({
-                center: blueway.geometry.coordinates,
+                center: protectedLand.geometry.coordinates,
                 zoom: 16,
                 bearing: 0,
                 pitch: 0,
@@ -750,24 +680,24 @@ document.addEventListener('DOMContentLoaded', function () {
           }
 
           // Create a Mapbox GL JS `Popup`
-          function createPopUp(blueway) {
+          function createPopUp(protectedLand) {
             clearPopups()
             let coordinates
-            if (blueway.properties.Long !== undefined && blueway.properties.Lat !== undefined) {
-              coordinates = [blueway.properties.Long, blueway.properties.Lat]
+            if (protectedLand.properties.Long !== undefined && protectedLand.properties.Lat !== undefined) {
+              coordinates = [protectedLand.properties.Long, protectedLand.properties.Lat]
               // Ensure that if the map is zoomed out such that multiple
               // copies of the feature are visible, the popup appears
               // over the copy being pointed to.
-              while (Math.abs(blueway.properties.Long - coordinates[0]) > 180) {
-                coordinates[0] += blueway.properties.Long > coordinates[0] ? 360 : -360
+              while (Math.abs(protectedLand.properties.Long - coordinates[0]) > 180) {
+                coordinates[0] += protectedLand.properties.Long > coordinates[0] ? 360 : -360
               }
             } else {
-              coordinates = blueway.geometry.coordinates.slice()
+              coordinates = protectedLand.geometry.coordinates.slice()
               // Ensure that if the map is zoomed out such that multiple
               // copies of the feature are visible, the popup appears
               // over the copy being pointed to.
-              while (Math.abs(blueway.geometry.coordinates[0] - coordinates[0]) > 180) {
-                coordinates[0] += blueway.geometry.coordinates[0] > coordinates[0] ? 360 : -360
+              while (Math.abs(protectedLand.geometry.coordinates[0] - coordinates[0]) > 180) {
+                coordinates[0] += protectedLand.geometry.coordinates[0] > coordinates[0] ? 360 : -360
               }
             }
 
@@ -782,25 +712,18 @@ document.addEventListener('DOMContentLoaded', function () {
               right: [-15, 19],
             }
             let popupHtml = ``
-            if (blueway.properties.FeatureImage && blueway.properties.FeatureImage.trim() !== '') {
-              popupHtml += `<img class="popupImage" src="${blueway.properties.FeatureImage}">`
+            if (protectedLand.properties.FeatureImage && protectedLand.properties.FeatureImage.trim() !== '') {
+              popupHtml += `<img class="popupImage" src="${protectedLand.properties.FeatureImage}">`
             }
-            const riverOrderNumber = blueway.properties.RiverOrderNumber
-            popupHtml += `<h3>${riverOrderNumber ? riverOrderNumber + ') ' : ''}${blueway.properties.Name}</h3>`
-            const protectLandName = blueway.properties.Name.toLowerCase()
-            popupHtml += `<h4 class="pt-2 pb-1"><strong>${protectLandName}</strong></h4>`
-            if (blueway.properties.Portage && blueway.properties.Portage.trim() !== '') {
-              popupHtml += `<h4 class="pb-1"><strong>Portage:</strong> ${blueway.properties.Portage}</h4>`
+            popupHtml += `<h3>${protectedLand.properties.ProtectedLand}</h3>`
+            if (protectedLand.properties.Portage && protectedLand.properties.Portage.trim() !== '') {
+              popupHtml += `<h4 class="pb-1"><strong>Portage:</strong> ${protectedLand.properties.Portage}</h4>`
             }
-            if (
-              blueway.properties.Address &&
-              blueway.properties.Address.trim() !== '' &&
-              blueway.properties.Address.trim() !== '-'
-            ) {
-              popupHtml += `<h4 class="pb-1"><strong>Location:</strong> ${blueway.properties.Address}</h4>`
+            if (protectedLand.properties.Address && protectedLand.properties.Address.trim() !== '') {
+              popupHtml += `<h4 class="pb-1"><strong>Location:</strong> ${protectedLand.properties.Address}</h4>`
             }
-            if (blueway.properties.Rentals && blueway.properties.Rentals.trim() !== '') {
-              popupHtml += `<h4 class="pb-1"><strong>Rentals:</strong> ${blueway.properties.Rentals}</h4>`
+            if (protectedLand.properties.Rentals && protectedLand.properties.Rentals.trim() !== '') {
+              popupHtml += `<h4 class="pb-1"><strong>Rentals:</strong> ${protectedLand.properties.Rentals}</h4>`
             }
             const popup = new mapboxgl.Popup({
               offset: popupOffsets,
@@ -829,84 +752,63 @@ document.addEventListener('DOMContentLoaded', function () {
           }
 
           // Show description and photos
-          function showListing(blueway) {
-            const listing = document.getElementById('listing-' + blueway.properties.id)
+          function showListing(protectedLand) {
+            const listing = document.getElementById('listing-' + protectedLand.properties.id)
             hideShownItems()
             const activeHiddenItems = document.querySelectorAll('.active .hidden')
             activeHiddenItems.forEach((item) => {
               item.classList.remove('hidden')
               item.classList.add('shown')
             })
-            fetchPhotos(blueway)
+            fetchPhotos(protectedLand)
             listing?.scrollIntoView({
               behavior: 'smooth',
               block: 'start',
             })
           }
 
-          // Fetch photos for single blueway
-          function fetchPhotos(blueway) {
-            const bluewayListing = document.getElementById('listing-' + blueway.properties.id)
+          // Fetch photos for single protected land
+          function fetchPhotos(protectedLand) {
+            const protectedLandListing = document.getElementById('listing-' + protectedLand.properties.id)
 
             // If photos have already been populated, do not fetch again
-            if (bluewayListing?.querySelector('.listingPhotos')) {
+            if (protectedLandListing?.querySelector('.listingPhotos')) {
               return
             }
 
             const photosElement = document.createElement('div')
             photosElement.className = 'listingPhotos shown'
 
-            const coverPhotoLink = blueway.properties.CoverPhoto
-            const photosLinks = blueway.properties.Photos
+            const coverPhotoLink = protectedLand.properties.CoverPhoto
+            const photosLinks = protectedLand.properties.Photos
 
             const lightboxLinks = []
             const lightboxElements = []
 
             if (coverPhotoLink && coverPhotoLink.trim() !== '') {
-              const idMatch = coverPhotoLink.match(/\/d\/(.*?)\/view/)
-              if (idMatch) {
-                const id = idMatch[1]
-                const newUrl = `https://lh3.googleusercontent.com/d/${id}=w2396-h1646-iv1`
-                lightboxLinks.push(newUrl)
-                const newButton = document.createElement('button')
-                newButton.addEventListener('click', function () {
-                  lightbox.open()
-                })
+              lightboxLinks.push(coverPhotoLink)
+              const newButton = document.createElement('button')
+              newButton.addEventListener('click', function () {
+                lightbox.open()
+              })
 
-                const img = document.createElement('img')
-                img.setAttribute('src', newUrl)
-                img.setAttribute('class', 'listingImage')
+              const img = document.createElement('img')
+              img.setAttribute('src', coverPhotoLink)
+              img.setAttribute('class', 'listingImage')
 
-                newButton.appendChild(img)
-                photosElement.appendChild(newButton)
-              } else {
-                console.error('No id match')
-              }
-              bluewayListing?.appendChild(photosElement)
+              newButton.appendChild(img)
+              photosElement.appendChild(newButton)
+              protectedLandListing?.appendChild(photosElement)
             }
 
             if (photosLinks && photosLinks.trim() !== '') {
               if (photosLinks.includes(',')) {
                 const photoArray = photosLinks.split(',')
                 for (let i = 0; i < photoArray.length; i++) {
-                  const idMatch = photoArray[i].match(/\/d\/(.*?)\/view/)
-                  if (idMatch) {
-                    const id = idMatch[1]
-                    const newUrl = `https://lh3.googleusercontent.com/d/${id}=w2396-h1646-iv1`
-                    lightboxLinks.push(newUrl)
-                  } else {
-                    console.error('No id match')
-                  }
+                  lightboxLinks.push(photoArray[i])
                 }
               } else {
-                const idMatch = photosLinks.match(/\/d\/(.*?)\/view/)
-                if (idMatch) {
-                  const id = idMatch[1]
-                  const newUrl = `https://lh3.googleusercontent.com/d/${id}=w2396-h1646-iv1`
-                  lightboxLinks.push(newUrl)
-                } else {
-                  console.error('No id match')
-                }
+                lightboxLinks.push(photosLinks)
               }
             } else {
               console.error('No additional photos found')
@@ -928,33 +830,22 @@ document.addEventListener('DOMContentLoaded', function () {
             })
           }
 
-          // Sort blueways by river order number
-          function sortBluewaysByNumber() {
-            blueways.features.sort(function (a, b) {
-              const aRiverOrderNumber =
-                parseInt(a.properties.RiverOrderNumber) !== NaN ? a.properties.RiverOrderNumber : 0
-              const bRiverOrderNumber =
-                parseInt(b.properties.RiverOrderNumber) !== NaN ? b.properties.RiverOrderNumber : 0
-              return aRiverOrderNumber - bRiverOrderNumber
-            })
-          }
-
-          function sortBluewaysAlphabetically() {
-            blueways.features.sort(function (a, b) {
-              const aName = a.properties.Name ? a.properties.Name.trim().toLowerCase() : ''
-              const bName = b.properties.Name ? b.properties.Name.trim().toLowerCase() : ''
-              if (aName > bName) {
+          function sortProtectedLandsAlphabetically() {
+            protectedLands.features.sort(function (a, b) {
+              const aProtectedLand = a.properties.ProtectedLand ? a.properties.ProtectedLand.trim().toLowerCase() : ''
+              const bProtectedLand = b.properties.ProtectedLand ? b.properties.ProtectedLand.trim().toLowerCase() : ''
+              if (aProtectedLand > bProtectedLand) {
                 return 1
               }
-              if (aName < bName) {
+              if (aProtectedLand < bProtectedLand) {
                 return -1
               }
               return 0
             })
           }
 
-          function sortBluewaysByDistance() {
-            blueways.features.sort(function (a, b) {
+          function sortProtectedLandsByDistance() {
+            protectedLands.features.sort(function (a, b) {
               if (a.properties.distance > b.properties.distance) {
                 return 1
               }
@@ -967,8 +858,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Reset map to default view
           function resetMap() {
-            sortBluewaysByNumber()
-            sortBluewaysAlphabetically()
+            sortProtectedLandsAlphabetically()
             clearPopups()
             hideShownItems()
             hideActiveItems()

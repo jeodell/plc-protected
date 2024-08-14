@@ -117,10 +117,13 @@ input[type='number'] {
   border-left: 5px solid var(--plcDarkGreen);
 }
 
+.listingPhotos {
+  margin-top: 16px;
+}
+
 .listingImage {
   width: 100%;
   height: auto;
-  margin: 5px 5px 0 0;
 }
 
 .listingIcons {
@@ -135,6 +138,9 @@ input[type='number'] {
 
 .listingDesc {
   color: #555;
+  margin-top: 8px;
+  flex-direction: column;
+  row-gap: 4px;
 }
 
 .popupImage {
@@ -146,7 +152,7 @@ input[type='number'] {
 }
 
 .shown {
-  display: block;
+  display: flex;
 }
 
 ::-webkit-scrollbar {
