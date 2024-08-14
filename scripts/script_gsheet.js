@@ -717,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             popupHtml += `<h3>${protectedLand.properties.ProtectedLand}</h3>`
             if (protectedLand.properties.Address && protectedLand.properties.Address.trim() !== '') {
-              popupHtml += `<h4 class="pb-1"><strong>Location:</strong> ${protectedLand.properties.Address}</h4>`
+              popupHtml += `<h4 class="py-2 px-1"><strong>Location:</strong> ${protectedLand.properties.Address}</h4>`
             }
             new mapboxgl.Popup({
               offset: popupOffsets,
