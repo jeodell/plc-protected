@@ -712,20 +712,14 @@ document.addEventListener('DOMContentLoaded', function () {
               right: [-15, 19],
             }
             let popupHtml = ``
-            if (protectedLand.properties.FeatureImage && protectedLand.properties.FeatureImage.trim() !== '') {
-              popupHtml += `<img class="popupImage" src="${protectedLand.properties.FeatureImage}">`
+            if (protectedLand.properties.CoverPhoto && protectedLand.properties.CoverPhoto.trim() !== '') {
+              popupHtml += `<img class="popupImage" src="${protectedLand.properties.CoverPhoto}">`
             }
             popupHtml += `<h3>${protectedLand.properties.ProtectedLand}</h3>`
-            if (protectedLand.properties.Portage && protectedLand.properties.Portage.trim() !== '') {
-              popupHtml += `<h4 class="pb-1"><strong>Portage:</strong> ${protectedLand.properties.Portage}</h4>`
-            }
             if (protectedLand.properties.Address && protectedLand.properties.Address.trim() !== '') {
               popupHtml += `<h4 class="pb-1"><strong>Location:</strong> ${protectedLand.properties.Address}</h4>`
             }
-            if (protectedLand.properties.Rentals && protectedLand.properties.Rentals.trim() !== '') {
-              popupHtml += `<h4 class="pb-1"><strong>Rentals:</strong> ${protectedLand.properties.Rentals}</h4>`
-            }
-            const popup = new mapboxgl.Popup({
+            new mapboxgl.Popup({
               offset: popupOffsets,
               closeOnClick: true,
             })
