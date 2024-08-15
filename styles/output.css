@@ -548,10 +548,12 @@ video {
   --plcOrange: #e8881d;
   --plcBlue: #69b1be;
   --plcLightGreen: #88c82f;
+  --plcMidGreen: #9aac98;
   --plcDarkGreen: #345b30;
   --plcOrangeRGB: 232, 136, 29;
   --plcBlueRGB: 105, 177, 190;
   --plcLightGreenRGB: 136, 200, 47;
+  --plcMidGreenRGB: 154, 172, 152;
   --plcDarkGreenRGB: 52, 91, 48;
 }
 
@@ -757,7 +759,7 @@ input[type='number'] {
 }
 
 .mapboxgl-popup-content h3 {
-  background: #0c5059;
+  background: var(--plcMidGreen);
   color: #fff;
   margin: 0;
   display: block;
@@ -767,7 +769,7 @@ input[type='number'] {
 }
 
 .mapboxgl-popup-content h4 {
-  margin: 0px 10px;
+  margin: 8px 10px;
   display: block;
   font-weight: 400;
 }

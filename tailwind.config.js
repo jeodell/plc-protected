@@ -9,6 +9,7 @@ module.exports = {
         plcOrange: '#E8881D',
         plcBlue: '#69B1BE',
         plcLightGreen: '#88C82F',
+        plcMidGreen: '#9AAC98',
         plcDarkGreen: '#345B30',
       },
     },
