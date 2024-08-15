@@ -199,10 +199,17 @@ document.addEventListener('DOMContentLoaded', function () {
           fromInput.oninput = () => controlFromInput(fromSlider, fromInput, toInput, toSlider)
           toInput.oninput = () => controlToInput(toSlider, fromInput, toInput, toSlider)
 
-          map.loadImage(`../images/marker.png`, function (error, image) {
+          // Load markers
+          map.loadImage('../images/plc_marker_managed.png', function (error, image) {
             if (error) throw error
 
-            map.addImage('plc-marker', image)
+            map.addImage('plc-marker-managed', image)
+          })
+
+          map.loadImage('../images/plc_marker_unmanaged.png', function (error, image) {
+            if (error) throw error
+
+            map.addImage('plc-marker-unmanaged', image)
           })
 
           addProtectedLands()
@@ -364,8 +371,8 @@ document.addEventListener('DOMContentLoaded', function () {
               type: 'symbol',
               source: 'protectedLands',
               layout: {
-                'icon-image': 'plc-marker',
-                'icon-size': 0.8,
+                'icon-image': ['match', ['get', 'ManagedByPLC'], 'Yes', 'plc-marker-managed', 'plc-marker-unmanaged'],
+                'icon-size': 0.25,
                 'icon-allow-overlap': false,
                 'icon-ignore-placement': true,
               },
