@@ -26,7 +26,7 @@ function toggleSlideover() {
 
 function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
   const [from, to] = getParsed(fromInput, toInput)
-  fillSlider(fromInput, toInput, window.plcLightGreen, window.plcDarkGreeen, controlSlider)
+  fillSlider(fromInput, toInput, window.plcLightGreen, window.plcDarkGreen, controlSlider)
   if (from > to) {
     fromSlider.value = to
     fromInput.value = to
@@ -37,7 +37,7 @@ function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
 
 function controlToInput(toSlider, fromInput, toInput, controlSlider) {
   const [from, to] = getParsed(fromInput, toInput)
-  fillSlider(fromInput, toInput, window.plcLightGreen, window.plcDarkGreeen, controlSlider)
+  fillSlider(fromInput, toInput, window.plcLightGreen, window.plcDarkGreen, controlSlider)
   if (from <= to) {
     toSlider.value = to
     toInput.value = to
@@ -48,7 +48,7 @@ function controlToInput(toSlider, fromInput, toInput, controlSlider) {
 
 function controlFromSlider(fromSlider, toSlider, fromInput, fromSpan, filterProtectedLands) {
   const [from, to] = getParsed(fromSlider, toSlider)
-  fillSlider(fromSlider, toSlider, window.plcLightGreen, window.plcDarkGreeen, toSlider)
+  fillSlider(fromSlider, toSlider, window.plcLightGreen, window.plcDarkGreen, toSlider)
   if (from >= to) {
     fromSlider.value = to - 1
     fromInput.value = to - 1
@@ -62,7 +62,7 @@ function controlFromSlider(fromSlider, toSlider, fromInput, fromSpan, filterProt
 
 function controlToSlider(fromSlider, toSlider, toInput, toSpan, filterProtectedLands) {
   const [from, to] = getParsed(fromSlider, toSlider)
-  fillSlider(fromSlider, toSlider, window.plcLightGreen, window.plcDarkGreeen, toSlider)
+  fillSlider(fromSlider, toSlider, window.plcLightGreen, window.plcDarkGreen, toSlider)
   if (to <= from) {
     toSlider.value = from + 1
     toInput.value = from + 1
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const fromSpan = document.querySelector('#fromSpan')
   const toSpan = document.querySelector('#toSpan')
 
-  fillSlider(fromSlider, toSlider, window.plcLightGreen, window.plcDarkGreeen, toSlider)
+  fillSlider(fromSlider, toSlider, window.plcLightGreen, window.plcDarkGreen, toSlider)
 
   const filterByProtectedLand = document.querySelectorAll('#filter-by-protected-land input')
   const filterByDifficulty = document.querySelectorAll('#filter-by-difficulty input')
@@ -219,25 +219,61 @@ document.addEventListener('DOMContentLoaded', function () {
           // map.fitBounds(bbox, { padding: 50 })
 
           // Show protected land popup when hovering marker
-          map.on('mouseenter', 'access-points', (e) => {
+          map.on('mouseenter', 'unclustered-point', (e) => {
             map.getCanvas().style.cursor = 'pointer'
             createPopUp(e.features[0])
           })
 
-          // Clear popups when mouse leaves marker
-          map.on('mouseleave', 'access-points', () => {
+          map.on('mouseleave', 'unclustered-point', () => {
             map.getCanvas().style.cursor = ''
             clearPopups()
           })
 
-          // Fly to point, create new popup, and highlight sidebar listing
-          map.on('click', 'access-points', (e) => {
-            handleMarkerClick(e, e.features[0])
+          map.on('mouseenter', 'clusters', () => {
+            map.getCanvas().style.cursor = 'pointer'
+          })
+
+          map.on('mouseleave', 'clusters', () => {
+            map.getCanvas().style.cursor = ''
           })
 
           // Fly to point, create new popup, and highlight sidebar listing
-          map.on('touchstart', 'access-points', (e) => {
+          map.on('click', 'unclustered-point', (e) => {
             handleMarkerClick(e, e.features[0])
+          })
+
+          map.on('touchstart', 'unclustered-point', (e) => {
+            handleMarkerClick(e, e.features[0])
+          })
+
+          map.on('click', 'clusters', (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+              layers: ['clusters'],
+            })
+            const clusterId = features[0].properties.cluster_id
+            map.getSource('protected-lands').getClusterExpansionZoom(clusterId, (err, zoom) => {
+              if (err) return
+
+              map.easeTo({
+                center: features[0].geometry.coordinates,
+                zoom: zoom,
+              })
+            })
+          })
+
+          map.on('touchstart', 'clusters', (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+              layers: ['clusters'],
+            })
+            const clusterId = features[0].properties.cluster_id
+            map.getSource('protected-lands').getClusterExpansionZoom(clusterId, (err, zoom) => {
+              if (err) return
+
+              map.easeTo({
+                center: features[0].geometry.coordinates,
+                zoom: zoom,
+              })
+            })
           })
 
           // Add geocoder search control to the map
@@ -361,21 +397,61 @@ document.addEventListener('DOMContentLoaded', function () {
           showShowFilterButton()
 
           function addProtectedLands() {
-            // Add source for protectedLands
-            map.addSource('protectedLands', {
+            // Add source for protected lands
+            map.addSource('protected-lands', {
               type: 'geojson',
               data: protectedLands,
+              cluster: true,
+              clusterMaxZoom: 14,
+              clusterRadius: 20,
             })
 
+            // Cluster protected lands
             map.addLayer({
-              id: 'access-points',
+              id: 'clusters',
+              type: 'circle',
+              source: 'protected-lands',
+              filter: ['has', 'point_count'],
+              paint: {
+                'circle-color': '#f6f4ea',
+                'circle-radius': ['step', ['get', 'point_count'], 12, 3, 14, 5, 16, 10, 20],
+                'circle-stroke-width': 6,
+                'circle-stroke-color': window.plcDarkGreen,
+                'circle-stroke-opacity': 0.75,
+              },
+            })
+
+            // Add cluster count
+            map.addLayer({
+              id: 'cluster-count',
               type: 'symbol',
-              source: 'protectedLands',
+              source: 'protected-lands',
+              filter: ['has', 'point_count'],
+              layout: {
+                'text-field': '{point_count_abbreviated}',
+                'text-font': ['Arial Unicode MS Bold'],
+                'text-size': ['step', ['get', 'point_count'], 12, 3, 14, 5, 16, 10, 20],
+                'text-allow-overlap': true,
+              },
+              paint: {
+                'text-color': window.plcDarkGreen,
+              },
+            })
+
+            // Add protected land markers
+            map.addLayer({
+              id: 'unclustered-point',
+              type: 'symbol',
+              source: 'protected-lands',
+              filter: ['!', ['has', 'point_count']],
               layout: {
                 'icon-image': ['match', ['get', 'ManagedByPLC'], 'Yes', 'plc-marker-managed', 'plc-marker-unmanaged'],
                 'icon-size': 0.25,
-                'icon-allow-overlap': false,
+                'icon-allow-overlap': true,
                 'icon-ignore-placement': true,
+              },
+              paint: {
+                'text-color': window.plcDarkGreen,
               },
             })
           }
@@ -516,8 +592,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // Add protectedLands after filtering
           function filterMarkers() {
-            map.removeLayer('access-points')
-            map.removeSource('protectedLands')
+            map.removeLayer('clusters')
+            map.removeLayer('cluster-count')
+            map.removeLayer('unclustered-point')
+            map.removeSource('protected-lands')
             addProtectedLands()
           }
 
