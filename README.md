@@ -5,6 +5,7 @@
 - ~~Convert script file from blueways to protected lands~~
 - ~~Add protected lands data to map~~
 - ~~Update legend~~
+- ~~Cluster points~~
 - Figure out which data values to show in sidebar
 - Get filters working
 

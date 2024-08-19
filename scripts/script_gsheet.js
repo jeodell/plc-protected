@@ -154,26 +154,39 @@ document.addEventListener('DOMContentLoaded', function () {
         })
 
         map.on('load', function (e) {
-          // Add event listeners for filter by protected land checkboxes
-          filterByProtectedLand.forEach((checkbox) => {
-            checkbox.addEventListener('change', () => {
-              if (checkbox.value === 'all') {
-                filterByProtectedLand.forEach((checkbox) => {
-                  checkbox.checked = false
-                })
-                checkbox.checked = true
-              } else {
-                document.querySelector('#filter-by-protected-land input[value="all"]').checked = false
-                const filterByProtectedLandChecked = document.querySelectorAll(
-                  '#filter-by-protected-land input:checked',
-                )
-                if (filterByProtectedLandChecked.length === 0) {
-                  document.querySelector('#filter-by-protected-land input[value="all"]').checked = true
-                }
-              }
-              filterProtectedLands()
-            })
+          // Load markers
+          map.loadImage('../images/plc_marker_managed.png', function (error, image) {
+            if (error) throw error
+
+            map.addImage('plc-marker-managed', image)
           })
+
+          map.loadImage('../images/plc_marker_unmanaged.png', function (error, image) {
+            if (error) throw error
+
+            map.addImage('plc-marker-unmanaged', image)
+          })
+
+          // Add event listeners for filter by protected land checkboxes
+          // filterByProtectedLand.forEach((checkbox) => {
+          //   checkbox.addEventListener('change', () => {
+          //     if (checkbox.value === 'all') {
+          //       filterByProtectedLand.forEach((checkbox) => {
+          //         checkbox.checked = false
+          //       })
+          //       checkbox.checked = true
+          //     } else {
+          //       document.querySelector('#filter-by-protected-land input[value="all"]').checked = false
+          //       const filterByProtectedLandChecked = document.querySelectorAll(
+          //         '#filter-by-protected-land input:checked',
+          //       )
+          //       if (filterByProtectedLandChecked.length === 0) {
+          //         document.querySelector('#filter-by-protected-land input[value="all"]').checked = true
+          //       }
+          //     }
+          //     filterProtectedLands()
+          //   })
+          // })
 
           // Add event listeners for filter by difficulty checkboxes
           filterByDifficulty.forEach((checkbox) => {
@@ -200,19 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
           fromInput.oninput = () => controlFromInput(fromSlider, fromInput, toInput, toSlider)
           toInput.oninput = () => controlToInput(toSlider, fromInput, toInput, toSlider)
 
-          // Load markers
-          map.loadImage('../images/plc_marker_managed.png', function (error, image) {
-            if (error) throw error
-
-            map.addImage('plc-marker-managed', image)
-          })
-
-          map.loadImage('../images/plc_marker_unmanaged.png', function (error, image) {
-            if (error) throw error
-
-            map.addImage('plc-marker-unmanaged', image)
-          })
-
+          // Add protected lands and cluster
           addProtectedLands()
 
           // var bbox = turf.bbox(protectedLands)
