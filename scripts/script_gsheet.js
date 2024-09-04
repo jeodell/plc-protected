@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 layers: ['clusters'],
               })
               const clusterId = features[0].properties.cluster_id
-              map.getSource('proctected-lands').getClusterExpansionZoom(clusterId, (err, zoom) => {
+              map.getSource('protected-lands').getClusterExpansionZoom(clusterId, (err, zoom) => {
                 if (err) return
 
                 map.easeTo({
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 layers: ['clusters'],
               })
               const clusterId = features[0].properties.cluster_id
-              map.getSource('proctected-lands').getClusterExpansionZoom(clusterId, (err, zoom) => {
+              map.getSource('protected-lands').getClusterExpansionZoom(clusterId, (err, zoom) => {
                 if (err) return
 
                 map.easeTo({
