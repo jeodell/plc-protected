@@ -438,103 +438,87 @@ document.addEventListener('DOMContentLoaded', function () {
                 return
               }
 
-              // Check if the source already exists, if not, add it
-              if (!map.getSource('protected-lands')) {
-                map.addSource('protected-lands', {
-                  type: 'geojson',
-                  data: protectedLands,
-                  cluster: true,
-                  clusterMaxZoom: 14,
-                  clusterRadius: 20,
-                })
-              } else {
-                // If the source exists, update its data
-                map.getSource('protected-lands').setData(protectedLands)
-              }
+              map.addSource('knight-brown-boundary', {
+                type: 'geojson',
+                data: knightBrownData,
+              })
 
-              // Add layers only if they don't exist
-              if (!map.getLayer('clusters')) {
-                map.addLayer({
-                  id: 'clusters',
-                  type: 'circle',
-                  source: 'protected-lands',
-                  filter: ['has', 'point_count'],
-                  paint: {
-                    'circle-color': '#f6f4ea',
-                    'circle-radius': ['step', ['get', 'point_count'], 12, 3, 14, 5, 16, 10, 20],
-                    'circle-stroke-width': 6,
-                    'circle-stroke-color': window.plcDarkGreen,
-                    'circle-stroke-opacity': 0.75,
-                  },
-                })
-              }
+              map.addLayer({
+                id: 'knight-brown-fill',
+                type: 'fill',
+                source: 'knight-brown-boundary',
+                layout: {},
+                paint: {
+                  'fill-color': window.plcLightGreen,
+                  'fill-opacity': 0.2,
+                },
+              })
 
-              if (!map.getLayer('cluster-count')) {
-                map.addLayer({
-                  id: 'cluster-count',
-                  type: 'symbol',
-                  source: 'protected-lands',
-                  filter: ['has', 'point_count'],
-                  layout: {
-                    'text-field': '{point_count_abbreviated}',
-                    'text-font': ['Arial Unicode MS Bold'],
-                    'text-size': ['step', ['get', 'point_count'], 12, 3, 14, 5, 16, 10, 20],
-                    'text-allow-overlap': true,
-                  },
-                  paint: {
-                    'text-color': window.plcDarkGreen,
-                  },
-                })
-              }
+              map.addLayer({
+                id: 'knight-brown-outline',
+                type: 'line',
+                source: 'knight-brown-boundary',
+                layout: {},
+                paint: {
+                  'line-color': window.plcDarkGreen,
+                  'line-opacity': 0.5,
+                  'line-width': 2,
+                },
+              })
 
-              if (!map.getLayer('unclustered-point')) {
-                map.addLayer({
-                  id: 'unclustered-point',
-                  type: 'symbol',
-                  source: 'protected-lands',
-                  filter: ['!', ['has', 'point_count']],
-                  layout: {
-                    'icon-image': [
-                      'match',
-                      ['get', 'ManagedByPLC'],
-                      'Yes',
-                      'plc-marker-managed',
-                      'plc-marker-unmanaged',
-                    ],
-                    'icon-size': 0.25,
-                    'icon-allow-overlap': true,
-                    'icon-ignore-placement': true,
-                  },
-                  paint: {
-                    'text-color': window.plcDarkGreen,
-                  },
-                })
-              }
+              map.addSource('protected-lands', {
+                type: 'geojson',
+                data: protectedLands,
+                cluster: true,
+                clusterMaxZoom: 14,
+                clusterRadius: 20,
+              })
 
-              // Check if the Knight Brown boundary source already exists, if not, add it
-              if (!map.getSource('knight-brown-boundary')) {
-                map.addSource('knight-brown-boundary', {
-                  type: 'geojson',
-                  data: knightBrownData,
-                })
-              } else {
-                // If the source exists, update its data
-                map.getSource('knight-brown-boundary').setData(knightBrownData)
-              }
+              map.addLayer({
+                id: 'clusters',
+                type: 'circle',
+                source: 'protected-lands',
+                filter: ['has', 'point_count'],
+                paint: {
+                  'circle-color': '#f6f4ea',
+                  'circle-radius': ['step', ['get', 'point_count'], 12, 3, 14, 5, 16, 10, 20],
+                  'circle-stroke-width': 6,
+                  'circle-stroke-color': window.plcDarkGreen,
+                  'circle-stroke-opacity': 0.75,
+                },
+              })
 
-              // Add Knight Brown boundary layer only if it doesn't exist
-              if (!map.getLayer('knight-brown-fill')) {
-                map.addLayer({
-                  id: 'knight-brown-fill',
-                  type: 'fill',
-                  source: 'knight-brown-boundary',
-                  layout: {},
-                  paint: {
-                    'fill-color': window.plcLightGreen,
-                    'fill-opacity': 0.2,
-                  },
-                })
-              }
+              map.addLayer({
+                id: 'cluster-count',
+                type: 'symbol',
+                source: 'protected-lands',
+                filter: ['has', 'point_count'],
+                layout: {
+                  'text-field': '{point_count_abbreviated}',
+                  'text-font': ['Arial Unicode MS Bold'],
+                  'text-size': ['step', ['get', 'point_count'], 12, 3, 14, 5, 16, 10, 20],
+                  'text-allow-overlap': true,
+                },
+                paint: {
+                  'text-color': window.plcDarkGreen,
+                },
+              })
+
+              map.addLayer({
+                id: 'unclustered-point',
+                type: 'symbol',
+                source: 'protected-lands',
+                filter: ['!', ['has', 'point_count']],
+                layout: {
+                  'icon-image': ['match', ['get', 'ManagedByPLC'], 'Yes', 'plc-marker-managed', 'plc-marker-unmanaged'],
+                  'icon-size': 0.25,
+                  'icon-allow-overlap': true,
+                  'icon-ignore-placement': true,
+                },
+                paint: {
+                  'text-color': window.plcDarkGreen,
+                },
+              })
             }
 
             // Show the reset map button and add event listener
@@ -679,6 +663,7 @@ document.addEventListener('DOMContentLoaded', function () {
               if (map.getSource('protected-lands')) map.removeSource('protected-lands')
               if (map.getLayer('knight-brown-fill')) map.removeLayer('knight-brown-fill')
               if (map.getSource('knight-brown-boundary')) map.removeSource('knight-brown-boundary')
+              if (map.getLayer('knight-brown-outline')) map.removeLayer('knight-brown-outline')
               addProtectedLands()
             }
 
