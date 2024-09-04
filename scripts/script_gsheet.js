@@ -95,15 +95,29 @@ function fillSlider(from, to, sliderColor, rangeColor, controlSlider) {
     ${sliderColor} 100%)`
 }
 
-// Create the map
-const map = new mapboxgl.Map({
-  container: 'map',
-  // Mapbox outdoors
-  style: 'mapbox://styles/mapbox/outdoors-v12',
-  center: defaultCenter,
-  zoom: defaultZoom,
-  attributionControl: false,
-})
+function loadMapImages(map) {
+  const imagesToLoad = [
+    { name: 'plc-marker-managed', url: '../images/plc_marker_managed.png' },
+    { name: 'plc-marker-unmanaged', url: '../images/plc_marker_unmanaged.png' },
+  ]
+  return new Promise((resolve, reject) => {
+    let loadedImages = 0
+    imagesToLoad.forEach((img) => {
+      map.loadImage(img.url, (error, image) => {
+        if (error) {
+          console.error('Error loading image for:', img.name, error)
+          reject(error)
+        } else {
+          map.addImage(img.name, image)
+          loadedImages++
+          if (loadedImages === imagesToLoad.length) {
+            resolve()
+          }
+        }
+      })
+    })
+  })
+}
 
 async function fetchKnightBrown() {
   try {
@@ -118,6 +132,16 @@ async function fetchKnightBrown() {
     return null
   }
 }
+
+// Create the map
+const map = new mapboxgl.Map({
+  container: 'map',
+  // Mapbox outdoors
+  style: 'mapbox://styles/mapbox/outdoors-v12',
+  center: defaultCenter,
+  zoom: defaultZoom,
+  attributionControl: false,
+})
 
 document.addEventListener('DOMContentLoaded', function () {
   const lightbox = GLightbox({
@@ -171,21 +195,16 @@ document.addEventListener('DOMContentLoaded', function () {
           })
 
           map.on('load', function (e) {
-            // Load markers
-            map.loadImage('../images/plc_marker_managed.png', function (error, image) {
-              if (error) throw error
-
-              if (!map.hasImage('plc-marker-managed')) {
-                map.addImage('plc-marker-managed', image)
-              }
-            })
-
-            map.loadImage('../images/plc_marker_unmanaged.png', function (error, image) {
-              if (error) throw error
-              if (!map.hasImage('plc-marker-unmanaged')) {
-                map.addImage('plc-marker-unmanaged', image)
-              }
-            })
+            // Load images
+            loadMapImages(map)
+              .then(() => {
+                // All images have been loaded successfully
+                // Add protected lands and cluster
+                addProtectedLands()
+              })
+              .catch((error) => {
+                console.error('Error loading images:', error)
+              })
 
             // Add event listeners for filter by protected land checkboxes
             // filterByProtectedLand.forEach((checkbox) => {
@@ -233,12 +252,6 @@ document.addEventListener('DOMContentLoaded', function () {
             toSlider.oninput = () => controlToSlider(fromSlider, toSlider, toInput, toSpan, filterProtectedLands)
             fromInput.oninput = () => controlFromInput(fromSlider, fromInput, toInput, toSlider)
             toInput.oninput = () => controlToInput(toSlider, fromInput, toInput, toSlider)
-
-            // Add protected lands and cluster
-            addProtectedLands()
-
-            // var bbox = turf.bbox(protectedLands)
-            // map.fitBounds(bbox, { padding: 50 })
 
             // Show protected land popup when hovering marker
             map.on('mouseenter', 'unclustered-point', (e) => {
@@ -419,6 +432,12 @@ document.addEventListener('DOMContentLoaded', function () {
             showShowFilterButton()
 
             function addProtectedLands() {
+              // Check if the images are loaded
+              if (!map.hasImage('plc-marker-managed') || !map.hasImage('plc-marker-unmanaged')) {
+                console.error('Images not loaded yet. Cannot add protected lands.')
+                return
+              }
+
               // Check if the source already exists, if not, add it
               if (!map.getSource('protected-lands')) {
                 map.addSource('protected-lands', {
