@@ -133,6 +133,20 @@ async function fetchKnightBrown() {
   }
 }
 
+async function fetchCarawayCreek() {
+  try {
+    const response = await fetch('../data/caraway_creek_boundary.geojson')
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
+    }
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('Error fetching Caraway Creek boundary:', error)
+    return null
+  }
+}
+
 // Create the map
 const map = new mapboxgl.Map({
   container: 'map',
@@ -162,19 +176,23 @@ document.addEventListener('DOMContentLoaded', function () {
   const filterByDifficulty = document.querySelectorAll('#filter-by-difficulty input')
 
   const knightBrownFetch = fetchKnightBrown()
+  const carawayCreekFetch = fetchCarawayCreek()
 
-  Promise.resolve(knightBrownFetch).then((knightBrownData) => {
+  Promise.all([knightBrownFetch, carawayCreekFetch]).then((data) => {
+    const knightBrownData = data[0]
+    const carawayCreekData = data[1]
+
     // Fetch protected lands data from google sheets
     fetch(googleSheetsUrl)
       .then((response) => response.text())
       .then((csvData) => {
-        makeGeoJSON(csvData, knightBrownData)
+        makeGeoJSON(csvData, knightBrownData, carawayCreekData)
       })
       .catch((error) => {
         console.error('Error:', error)
       })
 
-    function makeGeoJSON(csvData) {
+    function makeGeoJSON(csvData, knightBrownData, carawayCreekData) {
       csv2geojson.csv2geojson(
         csvData,
         {
@@ -466,6 +484,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
               })
 
+              map.addSource('caraway-creek-boundary', {
+                type: 'geojson',
+                data: carawayCreekData,
+              })
+
+              map.addLayer({
+                id: 'caraway-creek-fill',
+                type: 'fill',
+                source: 'caraway-creek-boundary',
+                layout: {},
+                paint: {
+                  'fill-color': window.plcLightGreen,
+                  'fill-opacity': 0.2,
+                },
+              })
+
+              map.addLayer({
+                id: 'caraway-creek-outline',
+                type: 'line',
+                source: 'caraway-creek-boundary',
+                layout: {},
+                paint: {
+                  'line-color': window.plcDarkGreen,
+                  'line-opacity': 0.5,
+                  'line-width': 2,
+                },
+              })
+
               map.addSource('protected-lands', {
                 type: 'geojson',
                 data: protectedLands,
@@ -664,6 +710,9 @@ document.addEventListener('DOMContentLoaded', function () {
               if (map.getLayer('knight-brown-fill')) map.removeLayer('knight-brown-fill')
               if (map.getSource('knight-brown-boundary')) map.removeSource('knight-brown-boundary')
               if (map.getLayer('knight-brown-outline')) map.removeLayer('knight-brown-outline')
+              if (map.getLayer('caraway-creek-fill')) map.removeLayer('caraway-creek-fill')
+              if (map.getSource('caraway-creek-boundary')) map.removeSource('caraway-creek-boundary')
+              if (map.getLayer('caraway-creek-outline')) map.removeLayer('caraway-creek-outline')
               addProtectedLands()
             }
 
